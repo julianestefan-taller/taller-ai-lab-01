@@ -1,14 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { QRCodeSVG } from 'qrcode.react'
 
 interface ShortenResult {
   short_code: string
   short_url: string
+  clicks: number
 }
 
 export default function Home() {
   const [url, setUrl] = useState('')
+  const [customCode, setCustomCode] = useState('')
   const [result, setResult] = useState<ShortenResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,10 +25,13 @@ export default function Home() {
     setCopied(false)
 
     try {
+      const body: Record<string, string> = { url }
+      if (customCode.trim()) body.custom_code = customCode.trim()
+
       const res = await fetch('/api/shorten', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -56,7 +62,7 @@ export default function Home() {
         </div>
 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-white/20">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <input
               type="text"
               value={url}
@@ -64,6 +70,14 @@ export default function Home() {
               placeholder="https://example.com/very/long/url"
               className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition"
               required
+              disabled={loading}
+            />
+            <input
+              type="text"
+              value={customCode}
+              onChange={(e) => setCustomCode(e.target.value)}
+              placeholder="Custom code (optional, e.g. my-link)"
+              className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition text-sm"
               disabled={loading}
             />
             <button
@@ -92,8 +106,11 @@ export default function Home() {
           )}
 
           {result && (
-            <div className="mt-4 p-4 rounded-xl bg-green-500/20 border border-green-500/30">
-              <p className="text-green-300 text-xs font-medium uppercase tracking-wide mb-2">Shortened URL</p>
+            <div className="mt-4 p-4 rounded-xl bg-green-500/20 border border-green-500/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-green-300 text-xs font-medium uppercase tracking-wide">Shortened URL</p>
+                <span className="text-slate-400 text-xs">{result.clicks} click{result.clicks !== 1 ? 's' : ''}</span>
+              </div>
               <div className="flex gap-2">
                 <input
                   readOnly
@@ -106,6 +123,11 @@ export default function Home() {
                 >
                   {copied ? 'Copied!' : 'Copy'}
                 </button>
+              </div>
+              <div className="flex justify-center pt-1">
+                <div className="p-3 bg-white rounded-xl">
+                  <QRCodeSVG value={result.short_url} size={128} />
+                </div>
               </div>
             </div>
           )}

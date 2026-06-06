@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { findByShortCode } from '@/lib/db'
+import { findByShortCode, incrementClicks } from '@/lib/db'
 
 export async function GET(
   _request: NextRequest,
@@ -12,5 +12,6 @@ export async function GET(
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
+  incrementClicks(shortCode)
   return NextResponse.redirect(row.original_url, { status: 301 })
 }

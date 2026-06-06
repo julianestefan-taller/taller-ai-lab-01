@@ -10,6 +10,7 @@ interface UrlRow {
   short_code: string
   original_url: string
   created_at: string
+  clicks: number
 }
 
 export async function findByOriginalUrl(url: string): Promise<UrlRow | null> {
@@ -28,6 +29,10 @@ export async function findByShortCode(code: string): Promise<UrlRow | null> {
     .eq('short_code', code)
     .single()
   return data
+}
+
+export async function incrementClicks(shortCode: string): Promise<void> {
+  await supabase.rpc('increment_clicks', { code: shortCode })
 }
 
 export async function insertUrl(shortCode: string, originalUrl: string): Promise<UrlRow> {
