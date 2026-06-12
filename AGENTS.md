@@ -38,10 +38,13 @@ Persistence is Supabase. The DB layer is entirely in `src/lib/db.ts`.
 | `src/lib/db.ts` | All Supabase queries. The only file that imports `@supabase/supabase-js`. |
 | `src/app/api/shorten/route.ts` | POST handler. Validates, deduplicates, handles custom codes, inserts. |
 | `src/app/[shortCode]/route.ts` | GET handler. Looks up short code, redirects, fires click increment. |
-| `src/app/page.tsx` | Client component. Form, copy button, click count badge, QR code. |
+| `src/app/page.tsx` | Client component. Holds state + handlers; composes the components below. |
+| `src/app/components/` | Presentational components: `ShortenForm`, `ShortenResult` (copy button, click badge, QR), `ErrorBanner`, plus shared `types.ts`. |
 
 ## Testing
 
 Tests use Vitest. The Supabase client is mocked via `vi.hoisted()` — do not change the mock structure in `src/lib/__tests__/db.test.ts` without understanding why `vi.hoisted` is required (the factory needs references that must exist before module evaluation).
+
+Frontend component tests live in `src/app/components/__tests__/` and use `@testing-library/react` in jsdom (per-file `// @vitest-environment jsdom` docblock; node is the default environment).
 
 Run tests: `npm test`
